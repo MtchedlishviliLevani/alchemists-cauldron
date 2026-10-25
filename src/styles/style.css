@@ -56,6 +56,9 @@
   --icon-size: 2rem;
   --shadow-focus: 0 0 0 3px var(--color-accent);
 
+  --tooltip-width: 12rem;
+  --z-tooltip: 10;
+
   --duration-fast: 150ms;
   --easing-standard: ease-out;
 }
@@ -365,21 +368,6 @@ button:disabled {
   text-align: center;
 }
 
-.card__stats {
-  display: flex;
-  gap: var(--space-2);
-  font-size: var(--font-size-sm);
-}
-
-.card__stat {
-  display: flex;
-  gap: var(--space-1);
-}
-
-.card__stat-label {
-  color: var(--color-text-muted);
-}
-
 .card__badge {
   position: absolute;
   top: var(--space-1);
@@ -399,8 +387,7 @@ button:disabled {
 }
 
 .card--empty .card__icon,
-.card--empty .card__name,
-.card--empty .card__stats {
+.card--empty .card__name {
   visibility: hidden;
 }
 
@@ -829,4 +816,76 @@ button:disabled {
 .cauldron--drop-target {
   border-color: var(--color-success);
   box-shadow: var(--glow-success);
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  left: calc(100% + var(--space-2));
+  z-index: var(--z-tooltip);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: var(--tooltip-width);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  font-size: var(--font-size-sm);
+  text-align: start;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast) var(--easing-standard);
+}
+
+.tooltip--left {
+  right: calc(100% + var(--space-2));
+  left: auto;
+}
+
+.tooltip--up {
+  top: auto;
+  bottom: 0;
+}
+
+.tooltip--stacked {
+  top: calc(100% + var(--space-1));
+  right: var(--space-2);
+  left: auto;
+}
+
+.tooltip--stacked.tooltip--up {
+  top: auto;
+  bottom: calc(100% + var(--space-1));
+}
+
+.card:hover .tooltip,
+.card:focus-visible .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.card--empty .tooltip,
+.game--paused .tooltip {
+  display: none;
+}
+
+.tooltip__title {
+  font-weight: var(--font-weight-bold);
+}
+
+.tooltip__row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.tooltip__label {
+  color: var(--color-text-muted);
+}
+
+.tooltip__value {
+  font-weight: var(--font-weight-bold);
 }
