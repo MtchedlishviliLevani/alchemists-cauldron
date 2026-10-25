@@ -176,6 +176,16 @@ export function mountApp(root: HTMLElement): void {
     ],
   });
 
+  let shakenBrew = 0;
+  const shakeOnFailure = (state: IGameState): void => {
+    const brewResult = state.lastBrew;
+    if (brewResult === null || brewResult.count === shakenBrew) return;
+    shakenBrew = brewResult.count;
+    const odd = brewResult.count % 2 === 1;
+    game.classList.toggle('game--shake-odd', !brewResult.success && odd);
+    game.classList.toggle('game--shake-even', !brewResult.success && !odd);
+  };
+
   let ticker = 0;
   const syncTicker = (state: IGameState): void => {
     if (state.status === 'playing' && ticker === 0) {
@@ -202,6 +212,7 @@ export function mountApp(root: HTMLElement): void {
     pauseButton.disabled = state.status !== 'playing';
     game.classList.toggle('game--paused', state.status === 'paused');
     game.inert = state.status === 'paused';
+    shakeOnFailure(state);
     hud.update(state);
     shelf.update(state);
     cauldron.update(state);
