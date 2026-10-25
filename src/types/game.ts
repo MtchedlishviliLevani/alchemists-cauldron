@@ -35,6 +35,11 @@ export interface ICauldronValues {
 
 export type Parameter = keyof ICauldronValues;
 
+export interface IBrewResult {
+  success: boolean;
+  count: number;
+}
+
 export interface IGameState {
   status: GameStatus;
   difficulty: Difficulty;
@@ -47,4 +52,5 @@ export interface IGameState {
   cauldronIngredients: IIngredient[];
   shelfStock: Record<string, number>;
   gameOverReason: GameOverReason | null;
+  lastBrew: IBrewResult | null;
 }

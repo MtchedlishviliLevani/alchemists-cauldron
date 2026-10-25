@@ -1,9 +1,10 @@
-import { addIngredient, createMenuState, startGame } from '../logic/game';
+import { addIngredient, brew, canBrew, createMenuState, startGame } from '../logic/game';
 import { createStore } from '../state/store';
 import type { IGameState } from '../types/game';
 import { createBars } from './bars';
 import { createCauldron } from './cauldron';
 import { el } from './dom';
+import { createRecipePanel } from './recipe-panel';
 import { createShelf } from './shelf';
 
 function Stat(label: string, value: HTMLElement): HTMLElement {
@@ -24,6 +25,7 @@ export function mountApp(root: HTMLElement): void {
   });
   const bars = createBars();
   const cauldron = createCauldron(bars.element);
+  const recipePanel = createRecipePanel();
 
   const startButton = el('button', {
     className: 'button button--primary start-button',
@@ -32,6 +34,15 @@ export function mountApp(root: HTMLElement): void {
   });
   startButton.addEventListener('click', () => {
     store.setState(startGame(store.getState().difficulty, Math.random, Date.now()));
+  });
+
+  const brewButton = el('button', {
+    className: 'button button--primary brew-button',
+    attrs: { type: 'button' },
+    text: 'Brew',
+  });
+  brewButton.addEventListener('click', () => {
+    store.setState(brew(store.getState(), Math.random, Date.now()));
   });
 
   const header = el('header', {
@@ -46,23 +57,30 @@ export function mountApp(root: HTMLElement): void {
     ],
   });
 
-  const actions = el('div', { className: 'game__actions', children: [startButton] });
+  const actions = el('div', { className: 'game__actions', children: [startButton, brewButton] });
 
   const game = el('main', {
     className: 'game',
     children: [
       header,
-      el('div', { className: 'board', children: [shelf.element, cauldron.element] }),
+      el('div', {
+        className: 'board',
+        children: [shelf.element, recipePanel.element, cauldron.element],
+      }),
       actions,
     ],
   });
 
   const render = (state: IGameState): void => {
     scoreValue.textContent = String(state.score);
-    startButton.hidden = state.status === 'playing' || state.status === 'paused';
+    const inRun = state.status === 'playing' || state.status === 'paused';
+    startButton.hidden = inRun;
+    brewButton.hidden = !inRun;
+    brewButton.disabled = !canBrew(state);
     shelf.update(state);
     cauldron.update(state);
     bars.update(state);
+    recipePanel.update(state);
   };
 
   store.subscribe(render);
