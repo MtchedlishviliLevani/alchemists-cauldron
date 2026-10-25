@@ -3,6 +3,7 @@ import {
   brew,
   canBrew,
   createMenuState,
+  isCauldronFull,
   pauseGame,
   resumeGame,
   setDifficulty,
@@ -36,11 +37,18 @@ export function mountApp(root: HTMLElement): void {
   };
 
   const hud = createHud();
-  const shelf = createShelf((id) => {
+  const add = (id: string): void => {
     store.setState(addIngredient(store.getState(), id));
-  });
+  };
+  const shelf = createShelf(add);
   const bars = createBars();
-  const cauldron = createCauldron(bars.element);
+  const cauldron = createCauldron(bars.element, {
+    canDrop: () => {
+      const state = store.getState();
+      return state.status === 'playing' && !isCauldronFull(state);
+    },
+    onDrop: add,
+  });
   const recipePanel = createRecipePanel();
   const toMenu = (): void => {
     store.setState(createMenuState(store.getState().difficulty));

@@ -164,6 +164,9 @@ button:disabled {
 
 .cauldron {
   grid-area: cauldron;
+  transition:
+    border-color var(--duration-fast) var(--easing-standard),
+    box-shadow var(--duration-fast) var(--easing-standard);
 }
 
 .panel {
@@ -813,4 +816,17 @@ button:disabled {
   .leaderboard__table td {
     padding: var(--space-1);
   }
+}
+
+.card[draggable='true'] {
+  cursor: grab;
+}
+
+.card--dragging {
+  opacity: var(--opacity-disabled);
+}
+
+.cauldron--drop-target {
+  border-color: var(--color-success);
+  box-shadow: var(--glow-success);
 }
