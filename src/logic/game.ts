@@ -2,6 +2,9 @@ import { DIFFICULTY_SETTINGS, LEVEL_1_DIFFICULTY } from '../data/difficulty';
 import { INGREDIENTS } from '../data/ingredients';
 import type { IDifficultySettings } from '../data/difficulty';
 import type { Difficulty, IGameState } from '../types/game';
+import { isBrewSuccessful } from './brew-check';
+import { calculateCauldron } from './calculate-cauldron';
+import { pickRecipe } from './recipe-generator';
 import { createStock, stockOf, takeFromStock } from './stock';
 import type { RandomSource } from './stock';
 
@@ -22,6 +25,7 @@ export function createMenuState(difficulty: Difficulty = LEVEL_1_DIFFICULTY): IG
     cauldronIngredients: [],
     shelfStock: {},
     gameOverReason: null,
+    lastBrew: null,
   };
 }
 
@@ -34,6 +38,7 @@ export function startGame(difficulty: Difficulty, random: RandomSource, now: num
     timeLeft: settings.startTime,
     endTime: now + settings.startTime,
     lives: settings.lives,
+    activeRecipe: pickRecipe(difficulty, random),
     shelf,
     shelfStock: createStock(shelf, random),
   };
@@ -60,5 +65,45 @@ export function addIngredient(state: IGameState, id: string): IGameState {
     ...state,
     cauldronIngredients: [...state.cauldronIngredients, ingredient],
     shelfStock: takeFromStock(state.shelfStock, id),
+  };
+}
+
+export function canBrew(state: IGameState): boolean {
+  return (
+    state.status === 'playing' &&
+    state.activeRecipe !== null &&
+    state.cauldronIngredients.length > 0
+  );
+}
+
+function remainingTime(state: IGameState, now: number): number {
+  return state.endTime === null ? state.timeLeft : Math.max(0, state.endTime - now);
+}
+
+export function brew(state: IGameState, random: RandomSource, now: number): IGameState {
+  if (!canBrew(state) || state.activeRecipe === null) return state;
+  const settings = settingsFor(state);
+  const values = calculateCauldron(state.cauldronIngredients);
+  const success = isBrewSuccessful(values, state.activeRecipe, settings.tolerance);
+  const count = (state.lastBrew?.count ?? 0) + 1;
+
+  if (!success) {
+    return {
+      ...state,
+      lives: state.lives - 1,
+      cauldronIngredients: [],
+      lastBrew: { success, count },
+    };
+  }
+
+  const timeLeft = Math.min(remainingTime(state, now) + settings.timeBonus, settings.startTime);
+  return {
+    ...state,
+    score: state.score + settings.scorePerBrew,
+    timeLeft,
+    endTime: now + timeLeft,
+    activeRecipe: pickRecipe(state.difficulty, random),
+    cauldronIngredients: [],
+    lastBrew: { success, count },
   };
 }
