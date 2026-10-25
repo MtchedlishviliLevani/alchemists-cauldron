@@ -1,0 +1,16 @@
+{
+  "name": "alchemists-cauldron",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Alchemist's Cauldron: mix ingredients, match 3 target ranges and brew potions before time or lives run out.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MtchedlishviliLevani/alchemists-cauldron.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {}
+}
