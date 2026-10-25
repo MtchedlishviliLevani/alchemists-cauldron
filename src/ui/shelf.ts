@@ -52,7 +52,7 @@ function placeTooltip(card: HTMLElement, tooltip: HTMLElement): void {
   tooltip.classList.toggle('tooltip--up', bottom + tipBox.height > viewport.clientHeight);
 }
 
-function Card(ingredient: IIngredient, onAdd: (id: string) => void): ICard {
+function Card(ingredient: IIngredient, slot: number, onAdd: (id: string) => void): ICard {
   const badge = el('span', { className: 'card__badge', attrs: { 'aria-hidden': 'true' } });
   const tooltip = Tooltip(ingredient);
   const button = el('button', {
@@ -61,6 +61,7 @@ function Card(ingredient: IIngredient, onAdd: (id: string) => void): ICard {
       type: 'button',
       'data-id': ingredient.id,
       'aria-describedby': tooltip.id,
+      'aria-keyshortcuts': String(slot),
     },
     children: [
       el('span', {
@@ -70,6 +71,7 @@ function Card(ingredient: IIngredient, onAdd: (id: string) => void): ICard {
       }),
       el('span', { className: 'card__name', text: ingredient.name }),
       badge,
+      el('kbd', { className: 'card__key', attrs: { 'aria-hidden': 'true' }, text: String(slot) }),
       tooltip,
     ],
   });
@@ -115,7 +117,7 @@ export function createShelf(onAdd: (id: string) => void): IShelfView {
   const update = (state: IGameState): void => {
     if (state.shelf !== renderedShelf) {
       renderedShelf = state.shelf;
-      cards = state.shelf.map((ingredient) => Card(ingredient, onAdd));
+      cards = state.shelf.map((ingredient, index) => Card(ingredient, index + 1, onAdd));
       list.replaceChildren(...cards.map((card) => card.button));
     }
 
