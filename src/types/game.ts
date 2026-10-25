@@ -2,6 +2,8 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export type GameStatus = 'menu' | 'playing' | 'paused' | 'game-over';
 
+export type GameOverReason = 'time' | 'lives' | 'ingredients';
+
 export interface IIngredient {
   id: string;
   name: string;
@@ -31,12 +33,18 @@ export interface ICauldronValues {
   magicPower: number;
 }
 
+export type Parameter = keyof ICauldronValues;
+
 export interface IGameState {
   status: GameStatus;
+  difficulty: Difficulty;
   score: number;
   timeLeft: number;
+  endTime: number | null;
   lives: number;
   activeRecipe: IRecipe | null;
+  shelf: IIngredient[];
   cauldronIngredients: IIngredient[];
   shelfStock: Record<string, number>;
+  gameOverReason: GameOverReason | null;
 }
