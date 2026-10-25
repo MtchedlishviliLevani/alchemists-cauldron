@@ -5,9 +5,11 @@ import {
   createMenuState,
   pauseGame,
   resumeGame,
+  setDifficulty,
   startGame,
   tick,
 } from '../logic/game';
+import { DIFFICULTY_LABELS } from '../logic/difficulty';
 import { TICK_INTERVAL } from '../logic/timer';
 import { createStore } from '../state/store';
 import type { IGameState } from '../types/game';
@@ -15,10 +17,12 @@ import { createBars } from './bars';
 import { createCauldron } from './cauldron';
 import { el } from './dom';
 import { createGameOver } from './game-over';
+import { createHelp } from './help';
 import { createHud } from './hud';
 import { createLeaderboard } from './leaderboard';
 import { createPause } from './pause';
 import { createRecipePanel } from './recipe-panel';
+import { createSettings } from './settings';
 import { createShelf } from './shelf';
 
 export function mountApp(root: HTMLElement): void {
@@ -51,6 +55,10 @@ export function mountApp(root: HTMLElement): void {
     onLeaderboard: leaderboard.open,
   });
   const pauseDialog = createPause({ onResume: resume, onExit: toMenu });
+  const settings = createSettings((difficulty) => {
+    store.setState(setDifficulty(store.getState(), difficulty));
+  });
+  const help = createHelp();
 
   const startButton = el('button', {
     className: 'button button--primary start-button',
@@ -77,6 +85,22 @@ export function mountApp(root: HTMLElement): void {
     leaderboard.open(store.getState().difficulty);
   });
 
+  const settingsButton = el('button', {
+    className: 'button button--secondary',
+    attrs: { type: 'button' },
+    text: 'Settings',
+  });
+  settingsButton.addEventListener('click', settings.open);
+
+  const helpButton = el('button', {
+    className: 'button button--secondary',
+    attrs: { type: 'button' },
+    text: 'Help',
+  });
+  helpButton.addEventListener('click', help.open);
+
+  const difficultyLabel = el('p', { className: 'header__difficulty' });
+
   const pauseButton = el('button', {
     className: 'button button--secondary pause-button',
     attrs: { type: 'button' },
@@ -86,12 +110,26 @@ export function mountApp(root: HTMLElement): void {
 
   const header = el('header', {
     className: 'header',
-    children: [el('h1', { className: 'header__title', text: "Alchemist's Cauldron" }), hud.element],
+    children: [
+      el('div', {
+        className: 'header__heading',
+        children: [
+          el('h1', { className: 'header__title', text: "Alchemist's Cauldron" }),
+          difficultyLabel,
+        ],
+      }),
+      hud.element,
+    ],
+  });
+
+  const menuActions = el('div', {
+    className: 'game__menu',
+    children: [settingsButton, helpButton, leaderboardButton],
   });
 
   const actions = el('div', {
     className: 'game__actions',
-    children: [startButton, brewButton, pauseButton, leaderboardButton],
+    children: [startButton, brewButton, pauseButton, menuActions],
   });
 
   const game = el('main', {
@@ -124,7 +162,8 @@ export function mountApp(root: HTMLElement): void {
     brewButton.hidden = !inRun;
     brewButton.disabled = !canBrew(state);
     pauseButton.hidden = !inRun;
-    leaderboardButton.hidden = state.status !== 'menu';
+    menuActions.hidden = state.status !== 'menu';
+    difficultyLabel.textContent = `Difficulty: ${DIFFICULTY_LABELS[state.difficulty]}`;
     pauseButton.disabled = state.status !== 'playing';
     game.classList.toggle('game--paused', state.status === 'paused');
     game.inert = state.status === 'paused';
@@ -135,6 +174,7 @@ export function mountApp(root: HTMLElement): void {
     recipePanel.update(state);
     gameOver.update(state);
     pauseDialog.update(state);
+    settings.update(state);
     syncTicker(state);
   };
 
@@ -143,6 +183,13 @@ export function mountApp(root: HTMLElement): void {
   });
 
   store.subscribe(render);
-  root.replaceChildren(game, gameOver.element, pauseDialog.element, ...leaderboard.dialogs);
+  root.replaceChildren(
+    game,
+    gameOver.element,
+    pauseDialog.element,
+    settings.element,
+    help.element,
+    ...leaderboard.dialogs
+  );
   render(store.getState());
 }
