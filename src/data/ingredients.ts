@@ -1,0 +1,68 @@
+import type { IIngredient } from '../types/game';
+
+export const INGREDIENTS: readonly IIngredient[] = [
+  {
+    id: 'dragon-tears',
+    name: 'Dragon Tears',
+    icon: '🐉',
+    temperature: 25,
+    density: 8,
+    magicPower: 10,
+  },
+  {
+    id: 'fairy-dust',
+    name: 'Fairy Dust',
+    icon: '✨',
+    temperature: 12,
+    density: 9,
+    magicPower: 12,
+  },
+  {
+    id: 'frost-lotus',
+    name: 'Frost Lotus',
+    icon: '❄️',
+    temperature: -18,
+    density: 4,
+    magicPower: 14,
+  },
+  {
+    id: 'mandrake-root',
+    name: 'Mandrake Root',
+    icon: '🌱',
+    temperature: -5,
+    density: 20,
+    magicPower: 8,
+  },
+  {
+    id: 'caustic-acid',
+    name: 'Caustic Acid',
+    icon: '🧪',
+    temperature: 10,
+    density: 14,
+    magicPower: 22,
+  },
+  {
+    id: 'essence-of-the-void',
+    name: 'Essence of the Void',
+    icon: '🌑',
+    temperature: -20,
+    density: -10,
+    magicPower: 40,
+  },
+  {
+    id: 'phoenix-feather',
+    name: 'Phoenix Feather',
+    icon: '🪶',
+    temperature: 50,
+    density: -10,
+    magicPower: 30,
+  },
+  {
+    id: 'toad-slime',
+    name: 'Toad Slime',
+    icon: '🐸',
+    temperature: 5,
+    density: 30,
+    magicPower: 0,
+  },
+];
