@@ -56,14 +56,30 @@ The project is built step by step. Each stage builds on the previous one.
 | Score per brew              |  100  |  200   |  300  |
 | Time bonus per brew         | +15 s | +10 s  | +5 s  |
 
+**Level 3 — the full game**
+
+- **Drag & drop:** drag a shelf card into the cauldron with the mouse (HTML5 drag events). The cauldron glows as a drop zone; drops are ignored when paused or full. Clicking still works.
+- **Tooltip:** cards show only the icon, name and stock; the 3 numbers appear in a tooltip on hover or focus. It opens to the left near the right edge, upward near the bottom edge, and is hidden while paused.
+- **Chemical reactions:** a typed table of 15 reactions. Easy has none, Medium uses **Bubbling** and **Solar Frost**, Hard uses **Volatile Mix**, **Pressure Spike** and **Steam Burst**. The mix is recalculated from the ingredient list with the active reactions applied. A reaction fires only when it turns active, and its one-time effect (time, a life, clearing the cauldron) happens once.
+- **Pour Out:** empties the cauldron for −10 s without losing a life; poured ingredients are not returned.
+- **Visual feedback:** ingredient icons float in a CSS-drawn cauldron; a correct brew shows a sparkle burst with the time bonus, a failed brew an explosion and a screen shake. CSS animations only.
+- **Keyboard shortcuts:** during play only, see the table below. They are ignored on the start, pause and Game Over screens and while typing.
+
+| Key       | Action                                    |
+| --------- | ----------------------------------------- |
+| `1`–`8`   | Add the ingredient in that shelf slot     |
+| `B`       | Brew                                      |
+| `O`       | Pour Out                                  |
+| `P`/`Esc` | Pause (`Esc` in the pause window resumes) |
+
 ## How to play
 
 1. Open **Settings** and choose **Easy**, **Medium** or **Hard** (Medium by default). **Help** shows the rules.
 2. Press **Start Game**. A random recipe appears with 3 target ranges, and the shelf fills with ingredients.
-3. Click ingredients on the shelf to add them to the cauldron. The 3 bars show the current mix and glow green when a value is inside its target zone.
-4. Press **Brew**. If all 3 values are inside the zones (with the difficulty tolerance), you score points and gain time; otherwise you lose a life. Used ingredients are gone either way.
+3. Click or drag ingredients into the cauldron (or press `1`–`8`). Hover a card to see its values. The 3 bars show the current mix and glow green when a value is inside its target zone. On Medium and Hard watch for reactions.
+4. Press **Brew** (`B`). If all 3 values are inside the zones (with the difficulty tolerance), you score points and gain time; otherwise you lose a life. Used ingredients are gone either way. **Pour Out** (`O`) empties a bad mix for 10 seconds instead.
 5. Keep brewing until the time runs out, all lives are lost, or the ingredients run out.
-6. Use **Pause** at any time. If you close the page, **Continue Game** brings the run back. A Top-10 score can be saved to the **Leaderboard** of its difficulty.
+6. Use **Pause** (`P` / `Esc`) at any time. If you close the page, **Continue Game** brings the run back. A Top-10 score can be saved to the **Leaderboard** of its difficulty.
 
 ## Getting started
 
@@ -92,8 +108,8 @@ npm run dev
 ```text
 src/
 ├── main.ts        # entry point: mounts the app
-├── data/          # fixed game data: ingredients, recipes, difficulty, bar scales
-├── logic/         # pure game rules: stock, sums, brew check, recipes, timer, leaderboard
+├── data/          # fixed game data: ingredients, recipes, reactions, difficulty, bar scales
+├── logic/         # pure game rules: stock, sums, reactions, brew check, timer, save, shortcuts
 ├── state/         # the store that holds the game state
 ├── storage/       # localStorage access for the leaderboards and the saved game
 ├── types/         # shared TypeScript types
