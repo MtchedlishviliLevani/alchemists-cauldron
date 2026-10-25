@@ -24,6 +24,7 @@ import { el } from './dom';
 import { createGameOver } from './game-over';
 import { createHelp } from './help';
 import { createHud } from './hud';
+import { bindKeyboard } from './keyboard';
 import { createLeaderboard } from './leaderboard';
 import { createPause } from './pause';
 import { createRecipePanel } from './recipe-panel';
@@ -92,21 +93,23 @@ export function mountApp(root: HTMLElement): void {
 
   const brewButton = el('button', {
     className: 'button button--primary brew-button',
-    attrs: { type: 'button' },
+    attrs: { type: 'button', 'aria-keyshortcuts': 'B' },
     text: 'Brew',
   });
-  brewButton.addEventListener('click', () => {
+  const doBrew = (): void => {
     store.setState(brew(store.getState(), Math.random, Date.now()));
-  });
+  };
+  brewButton.addEventListener('click', doBrew);
 
   const pourButton = el('button', {
     className: 'button button--secondary pour-button',
-    attrs: { type: 'button' },
+    attrs: { type: 'button', 'aria-keyshortcuts': 'O' },
     text: 'Pour Out (−10 s)',
   });
-  pourButton.addEventListener('click', () => {
+  const doPour = (): void => {
     store.setState(pourOut(store.getState(), Date.now()));
-  });
+  };
+  pourButton.addEventListener('click', doPour);
 
   const leaderboardButton = el('button', {
     className: 'button button--secondary',
@@ -135,7 +138,7 @@ export function mountApp(root: HTMLElement): void {
 
   const pauseButton = el('button', {
     className: 'button button--secondary pause-button',
-    attrs: { type: 'button' },
+    attrs: { type: 'button', 'aria-keyshortcuts': 'P Escape' },
     text: 'Pause',
   });
   pauseButton.addEventListener('click', pause);
@@ -244,6 +247,25 @@ export function mountApp(root: HTMLElement): void {
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') pause();
+  });
+
+  bindKeyboard(store.getState, (action) => {
+    switch (action.type) {
+      case 'brew':
+        doBrew();
+        break;
+      case 'pour':
+        doPour();
+        break;
+      case 'pause':
+        pause();
+        break;
+      case 'add': {
+        const ingredient = store.getState().shelf[action.index];
+        if (ingredient !== undefined) add(ingredient.id);
+        break;
+      }
+    }
   });
 
   store.subscribe(persist);
