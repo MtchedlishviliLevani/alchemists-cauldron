@@ -43,6 +43,7 @@
   --time-bar-width: 6rem;
   --time-bar-height: 0.375rem;
   --dialog-width: 24rem;
+  --blur-paused: 0.5rem;
   --color-backdrop: rgb(10 6 24 / 75%);
   --shake-distance: 0.25rem;
   --content-max-width: 75rem;
@@ -601,4 +602,11 @@ button:disabled {
 
 .game-over__score {
   font-size: var(--font-size-lg);
+}
+
+.game--paused .board,
+.game--paused .game__actions {
+  filter: blur(var(--blur-paused));
+  pointer-events: none;
+  user-select: none;
 }

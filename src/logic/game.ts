@@ -146,3 +146,13 @@ export function brew(state: IGameState, random: RandomSource, now: number): IGam
     now
   );
 }
+
+export function pauseGame(state: IGameState, now: number): IGameState {
+  if (state.status !== 'playing') return state;
+  return { ...state, status: 'paused', timeLeft: remainingTime(state, now), endTime: null };
+}
+
+export function resumeGame(state: IGameState, now: number): IGameState {
+  if (state.status !== 'paused') return state;
+  return { ...state, status: 'playing', endTime: now + state.timeLeft };
+}
