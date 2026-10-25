@@ -2,9 +2,11 @@ import {
   addIngredient,
   brew,
   canBrew,
+  canPourOut,
   createMenuState,
   isCauldronFull,
   pauseGame,
+  pourOut,
   resumeGame,
   setDifficulty,
   startGame,
@@ -97,6 +99,15 @@ export function mountApp(root: HTMLElement): void {
     store.setState(brew(store.getState(), Math.random, Date.now()));
   });
 
+  const pourButton = el('button', {
+    className: 'button button--secondary pour-button',
+    attrs: { type: 'button' },
+    text: 'Pour Out (−10 s)',
+  });
+  pourButton.addEventListener('click', () => {
+    store.setState(pourOut(store.getState(), Date.now()));
+  });
+
   const leaderboardButton = el('button', {
     className: 'button button--secondary',
     attrs: { type: 'button' },
@@ -150,7 +161,7 @@ export function mountApp(root: HTMLElement): void {
 
   const actions = el('div', {
     className: 'game__actions',
-    children: [startButton, continueButton, brewButton, pauseButton, menuActions],
+    children: [startButton, continueButton, brewButton, pourButton, pauseButton, menuActions],
   });
 
   const game = el('main', {
@@ -183,6 +194,8 @@ export function mountApp(root: HTMLElement): void {
     brewButton.hidden = !inRun;
     brewButton.disabled = !canBrew(state);
     pauseButton.hidden = !inRun;
+    pourButton.hidden = !inRun;
+    pourButton.disabled = !canPourOut(state);
     menuActions.hidden = state.status !== 'menu';
     continueButton.hidden = state.status !== 'menu' || savedGame === null;
     difficultyLabel.textContent = `Difficulty: ${DIFFICULTY_LABELS[state.difficulty]}`;
