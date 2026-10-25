@@ -182,6 +182,25 @@ export function brew(state: IGameState, random: RandomSource, now: number): IGam
   );
 }
 
+export const POUR_OUT_PENALTY = 10 * 1000;
+
+export function canPourOut(state: IGameState): boolean {
+  return state.status === 'playing' && state.cauldronIngredients.length > 0;
+}
+
+export function pourOut(state: IGameState, now: number): IGameState {
+  if (!canPourOut(state)) return state;
+  const timeLeft = remainingTime(state, now) - POUR_OUT_PENALTY;
+  const poured: IGameState = {
+    ...state,
+    timeLeft: Math.max(0, timeLeft),
+    endTime: now + Math.max(0, timeLeft),
+    cauldronIngredients: [],
+  };
+  if (timeLeft <= 0) return endGame(poured, 'time', now);
+  return settle(poured, now);
+}
+
 export function pauseGame(state: IGameState, now: number): IGameState {
   if (state.status !== 'playing') return state;
   return { ...state, status: 'paused', timeLeft: remainingTime(state, now), endTime: null };
