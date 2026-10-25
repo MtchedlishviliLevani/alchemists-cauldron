@@ -24,10 +24,10 @@ export function createRecipePanel(): IRecipePanelView {
   const result = el('p', { className: 'recipe__result', attrs: { 'aria-live': 'polite' } });
 
   const element = el('section', {
-    className: 'panel recipe',
+    className: 'recipe',
     attrs: { 'aria-labelledby': 'recipe-title' },
     children: [
-      el('h2', { className: 'panel__title', attrs: { id: 'recipe-title' }, text: 'Recipe' }),
+      el('h2', { className: 'section-title', attrs: { id: 'recipe-title' }, text: 'Recipe' }),
       name,
       el('ul', {
         className: 'recipe__ranges',

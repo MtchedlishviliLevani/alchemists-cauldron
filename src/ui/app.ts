@@ -45,7 +45,7 @@ export function mountApp(root: HTMLElement): void {
   };
   const shelf = createShelf(add);
   const bars = createBars();
-  const cauldron = createCauldron(bars.element, {
+  const cauldron = createCauldron({
     canDrop: () => {
       const state = store.getState();
       return state.status === 'playing' && !isCauldronFull(state);
@@ -164,7 +164,22 @@ export function mountApp(root: HTMLElement): void {
 
   const actions = el('div', {
     className: 'game__actions',
-    children: [startButton, continueButton, brewButton, pourButton, pauseButton, menuActions],
+    children: [
+      startButton,
+      continueButton,
+      brewButton,
+      el('div', { className: 'game__secondary', children: [pourButton, pauseButton] }),
+      menuActions,
+    ],
+  });
+
+  const gauges = el('section', {
+    className: 'gauges',
+    attrs: { 'aria-labelledby': 'gauges-title' },
+    children: [
+      el('h2', { className: 'section-title', attrs: { id: 'gauges-title' }, text: 'Readings' }),
+      bars.element,
+    ],
   });
 
   const game = el('main', {
@@ -173,9 +188,8 @@ export function mountApp(root: HTMLElement): void {
       header,
       el('div', {
         className: 'board',
-        children: [shelf.element, recipePanel.element, cauldron.element],
+        children: [recipePanel.element, cauldron.element, gauges, actions, shelf.element],
       }),
-      actions,
     ],
   });
 
@@ -213,6 +227,7 @@ export function mountApp(root: HTMLElement): void {
     continueButton.hidden = state.status !== 'menu' || savedGame === null;
     difficultyLabel.textContent = `Difficulty: ${DIFFICULTY_LABELS[state.difficulty]}`;
     pauseButton.disabled = state.status !== 'playing';
+    game.classList.toggle('game--menu', state.status === 'menu');
     game.classList.toggle('game--paused', state.status === 'paused');
     game.inert = state.status === 'paused';
     shakeOnFailure(state);

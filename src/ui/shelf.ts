@@ -1,6 +1,7 @@
 import { canAddIngredient, isCauldronFull } from '../logic/game';
 import { stockOf } from '../logic/stock';
 import type { IGameState, IIngredient } from '../types/game';
+import { IngredientArt } from './art';
 import { el } from './dom';
 import { INGREDIENT_MIME } from './drag';
 import { formatSigned } from './format';
@@ -64,11 +65,7 @@ function Card(ingredient: IIngredient, slot: number, onAdd: (id: string) => void
       'aria-keyshortcuts': String(slot),
     },
     children: [
-      el('span', {
-        className: 'card__icon',
-        attrs: { 'aria-hidden': 'true' },
-        text: ingredient.icon,
-      }),
+      el('span', { className: 'card__icon', children: [IngredientArt(ingredient)] }),
       el('span', { className: 'card__name', text: ingredient.name }),
       badge,
       el('kbd', { className: 'card__key', attrs: { 'aria-hidden': 'true' }, text: String(slot) }),
@@ -102,10 +99,10 @@ export function createShelf(onAdd: (id: string) => void): IShelfView {
   const list = el('div', { className: 'shelf__grid' });
   const empty = el('p', { className: 'panel__empty', text: 'The shelf is empty.' });
   const element = el('section', {
-    className: 'panel shelf',
+    className: 'shelf',
     attrs: { 'aria-labelledby': 'shelf-title' },
     children: [
-      el('h2', { className: 'panel__title', attrs: { id: 'shelf-title' }, text: 'Shelf' }),
+      el('h2', { className: 'section-title', attrs: { id: 'shelf-title' }, text: 'Shelf' }),
       empty,
       list,
     ],
@@ -128,7 +125,13 @@ export function createShelf(onAdd: (id: string) => void): IShelfView {
     for (const card of cards) {
       const left = stockOf(state.shelfStock, card.ingredient.id);
       const isEmpty = left <= 0;
-      card.badge.textContent = String(left);
+      const count = String(left);
+      if (card.badge.textContent !== count && card.badge.textContent !== '') {
+        const odd = left % 2 === 1;
+        card.badge.classList.toggle('card__badge--tick-odd', odd);
+        card.badge.classList.toggle('card__badge--tick-even', !odd);
+      }
+      card.badge.textContent = count;
       card.button.classList.toggle('card--empty', isEmpty);
       const canAdd = canAddIngredient(state, card.ingredient.id);
       card.button.disabled = !canAdd;
