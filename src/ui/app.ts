@@ -74,7 +74,7 @@ export function mountApp(root: HTMLElement): void {
     text: 'Leaderboard',
   });
   leaderboardButton.addEventListener('click', () => {
-    leaderboard.open();
+    leaderboard.open(store.getState().difficulty);
   });
 
   const pauseButton = el('button', {

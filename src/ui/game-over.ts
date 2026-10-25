@@ -6,7 +6,7 @@ import {
 } from '../logic/leaderboard';
 import type { ILeaderboardEntry } from '../logic/leaderboard';
 import { loadLeaderboard, saveLeaderboard } from '../storage/leaderboard';
-import type { GameOverReason, IGameState } from '../types/game';
+import type { Difficulty, GameOverReason, IGameState } from '../types/game';
 import { createDialog, DialogButton } from './dialog';
 import { el } from './dom';
 
@@ -18,7 +18,7 @@ export interface IGameOverView {
 export interface IGameOverActions {
   onPlayAgain: () => void;
   onMenu: () => void;
-  onLeaderboard: (highlight?: ILeaderboardEntry) => void;
+  onLeaderboard: (difficulty: Difficulty, highlight?: ILeaderboardEntry) => void;
 }
 
 const REASONS: Record<GameOverReason, string> = {
@@ -86,7 +86,7 @@ export function createGameOver({
     DialogButton(
       'Leaderboard',
       () => {
-        onLeaderboard();
+        onLeaderboard(finalDifficulty);
       },
       'secondary'
     ),
@@ -94,6 +94,7 @@ export function createGameOver({
   );
 
   let finalScore = 0;
+  let finalDifficulty: Difficulty = 'medium';
   let wasOver = false;
 
   form.addEventListener('submit', (event) => {
@@ -105,13 +106,14 @@ export function createGameOver({
 
     const entry: ILeaderboardEntry = {
       name: nameInput.value.trim(),
+      difficulty: finalDifficulty,
       score: finalScore,
       date: Date.now(),
     };
-    saveLeaderboard(insertEntry(loadLeaderboard(), entry));
+    saveLeaderboard(finalDifficulty, insertEntry(loadLeaderboard(finalDifficulty), entry));
     form.hidden = true;
     saved.hidden = false;
-    onLeaderboard(entry);
+    onLeaderboard(finalDifficulty, entry);
   });
 
   nameInput.addEventListener('input', () => {
@@ -130,9 +132,10 @@ export function createGameOver({
     wasOver = true;
 
     finalScore = state.score;
+    finalDifficulty = state.difficulty;
     reason.textContent = state.gameOverReason === null ? '' : REASONS[state.gameOverReason];
     score.textContent = `Final score: ${String(state.score)}`;
-    const qualifies = qualifiesForLeaderboard(loadLeaderboard(), state.score);
+    const qualifies = qualifiesForLeaderboard(loadLeaderboard(state.difficulty), state.score);
     form.hidden = !qualifies;
     saved.hidden = true;
     nameInput.value = '';

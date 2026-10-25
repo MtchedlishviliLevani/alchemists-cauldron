@@ -698,3 +698,30 @@ button:disabled {
 .game-over__saved {
   color: var(--color-success);
 }
+
+.leaderboard__tabs {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.leaderboard__tab {
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width) solid var(--color-outline);
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  background-color: transparent;
+  transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+.leaderboard__tab[aria-pressed='true'] {
+  color: var(--color-text);
+  background-color: var(--color-accent-strong);
+  border-color: var(--color-accent-strong);
+}
+
+.leaderboard__tab:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
