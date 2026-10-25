@@ -2,6 +2,7 @@ import { canAddIngredient, isCauldronFull } from '../logic/game';
 import { stockOf } from '../logic/stock';
 import type { IGameState, IIngredient } from '../types/game';
 import { el } from './dom';
+import { INGREDIENT_MIME } from './drag';
 import { formatSigned } from './format';
 
 export interface IShelfView {
@@ -51,6 +52,18 @@ function Card(ingredient: IIngredient, onAdd: (id: string) => void): ICard {
   button.addEventListener('click', () => {
     onAdd(ingredient.id);
   });
+  button.addEventListener('dragstart', (event) => {
+    if (button.disabled || event.dataTransfer === null) {
+      event.preventDefault();
+      return;
+    }
+    event.dataTransfer.setData(INGREDIENT_MIME, ingredient.id);
+    event.dataTransfer.effectAllowed = 'copy';
+    button.classList.add('card--dragging');
+  });
+  button.addEventListener('dragend', () => {
+    button.classList.remove('card--dragging');
+  });
   return { ingredient, button, badge };
 }
 
@@ -86,7 +99,9 @@ export function createShelf(onAdd: (id: string) => void): IShelfView {
       const isEmpty = left <= 0;
       card.badge.textContent = String(left);
       card.button.classList.toggle('card--empty', isEmpty);
-      card.button.disabled = !canAddIngredient(state, card.ingredient.id);
+      const canAdd = canAddIngredient(state, card.ingredient.id);
+      card.button.disabled = !canAdd;
+      card.button.draggable = canAdd;
       card.button.setAttribute(
         'aria-label',
         isEmpty

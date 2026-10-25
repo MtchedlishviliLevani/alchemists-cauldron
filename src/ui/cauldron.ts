@@ -1,12 +1,21 @@
 import type { IGameState } from '../types/game';
 import { el } from './dom';
+import { hasIngredient, INGREDIENT_MIME } from './drag';
 
 export interface ICauldronView {
   element: HTMLElement;
   update: (state: IGameState) => void;
 }
 
-export function createCauldron(bars: HTMLElement): ICauldronView {
+export interface ICauldronActions {
+  canDrop: () => boolean;
+  onDrop: (id: string) => void;
+}
+
+export function createCauldron(
+  bars: HTMLElement,
+  { canDrop, onDrop }: ICauldronActions
+): ICauldronView {
   const list = el('ol', {
     className: 'cauldron__list',
     attrs: { 'aria-label': 'Ingredients in the cauldron' },
@@ -21,6 +30,28 @@ export function createCauldron(bars: HTMLElement): ICauldronView {
       bars,
       content,
     ],
+  });
+
+  const setDropTarget = (active: boolean): void => {
+    element.classList.toggle('cauldron--drop-target', active);
+  };
+
+  element.addEventListener('dragover', (event) => {
+    if (!hasIngredient(event) || !canDrop()) return;
+    event.preventDefault();
+    if (event.dataTransfer !== null) event.dataTransfer.dropEffect = 'copy';
+    setDropTarget(true);
+  });
+  element.addEventListener('dragleave', (event) => {
+    if (event.relatedTarget instanceof Node && element.contains(event.relatedTarget)) return;
+    setDropTarget(false);
+  });
+  element.addEventListener('drop', (event) => {
+    event.preventDefault();
+    setDropTarget(false);
+    const id = event.dataTransfer?.getData(INGREDIENT_MIME) ?? '';
+    if (id === '' || !canDrop()) return;
+    onDrop(id);
   });
 
   let rendered: IGameState['cauldronIngredients'] | null = null;
