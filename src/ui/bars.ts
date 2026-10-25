@@ -3,8 +3,8 @@ import type { IBarConfig } from '../data/bars';
 import { fillSegment, isSigned, rangeSegment, toPercent } from '../logic/bar-geometry';
 import type { ISegment } from '../logic/bar-geometry';
 import { checkedRange, isInRange } from '../logic/brew-check';
-import { calculateCauldron } from '../logic/calculate-cauldron';
 import { settingsFor } from '../logic/game';
+import { calculateMix } from '../logic/reactions';
 import type { IGameState } from '../types/game';
 import { el } from './dom';
 import { formatSigned } from './format';
@@ -61,7 +61,7 @@ export function createBars(): IBarsView {
   });
 
   const update = (state: IGameState): void => {
-    const values = calculateCauldron(state.cauldronIngredients);
+    const values = calculateMix(state.cauldronIngredients, state.difficulty);
     const recipe = state.activeRecipe;
     const tolerance = settingsFor(state).tolerance;
 

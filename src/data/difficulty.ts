@@ -9,6 +9,7 @@ export interface IDifficultySettings {
   scorePerBrew: number;
   timeBonus: number;
   reactionCount: number;
+  reactionIds: readonly string[];
 }
 
 const SECOND = 1000;
@@ -23,6 +24,7 @@ export const DIFFICULTY_SETTINGS: Record<Difficulty, IDifficultySettings> = {
     scorePerBrew: 100,
     timeBonus: 15 * SECOND,
     reactionCount: 0,
+    reactionIds: [],
   },
   medium: {
     shelfSize: 6,
@@ -33,6 +35,7 @@ export const DIFFICULTY_SETTINGS: Record<Difficulty, IDifficultySettings> = {
     scorePerBrew: 200,
     timeBonus: 10 * SECOND,
     reactionCount: 2,
+    reactionIds: ['bubbling', 'solar-frost'],
   },
   hard: {
     shelfSize: 8,
@@ -43,6 +46,7 @@ export const DIFFICULTY_SETTINGS: Record<Difficulty, IDifficultySettings> = {
     scorePerBrew: 300,
     timeBonus: 5 * SECOND,
     reactionCount: 3,
+    reactionIds: ['volatile-mix', 'pressure-spike', 'steam-burst'],
   },
 };
 
