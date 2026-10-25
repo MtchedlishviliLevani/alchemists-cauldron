@@ -40,13 +40,30 @@ The project is built step by step. Each stage builds on the previous one.
 - **Pause:** the Pause button or a hidden tab stops the timer and blurs the field; the dialog offers **Resume** and **Exit to Menu**.
 - **Leaderboard:** a Top-10 list in `localStorage`. A qualifying score asks for a name (2–15 characters: letters, digits, space, `_`, `-`). Dates use `DD.MM.YYYY HH:MM`, and on equal scores the earlier result stays higher. **Clear Leaderboard** asks for confirmation in an in-app dialog. Broken saved data never crashes the game.
 
+**Level 2 — difficulty and save**
+
+- **Difficulty selection:** **Settings** on the start screen opens the difficulty panel with **Easy**, **Medium** and **Hard**. Every number comes from one settings table (shelf size, cauldron limit, start time, tolerance, lives, score, time bonus, reactions); **Medium** keeps the Level 1 rules. Recipes come only from the chosen difficulty, and the difficulty can't be changed during a run. **Help** opens the game rules.
+- **Per-difficulty leaderboard:** one Top-10 list for each difficulty, with tabs and a **Difficulty** column.
+- **Auto-save & Continue Game:** the run is saved to `localStorage` after every change that matters, on pause and when the page closes. On the next visit **Continue Game** restores it paused, with the same stock, recipe and cauldron. Game over and **Exit to Menu** clear the save; a broken save is deleted and never crashes the game.
+
+| Setting                     | Easy  | Medium | Hard  |
+| --------------------------- | :---: | :----: | :---: |
+| Ingredients on shelf        |   4   |   6    |   8   |
+| Max ingredients in cauldron |   4   |   4    |   5   |
+| Starting time               | 180 s | 150 s  | 150 s |
+| Recipe tolerance            |  ±12  |   ±8   |  ±5   |
+| Lives                       |   5   |   3    |   3   |
+| Score per brew              |  100  |  200   |  300  |
+| Time bonus per brew         | +15 s | +10 s  | +5 s  |
+
 ## How to play
 
-1. Press **Start Game**. A random recipe appears with 3 target ranges, and the shelf fills with ingredients.
-2. Click ingredients on the shelf to add them to the cauldron (up to 4). The 3 bars show the current mix and glow green when a value is inside its target zone.
-3. Press **Brew**. If all 3 values are inside the zones (±8), you score 200 points and gain 10 seconds; otherwise you lose a life. Used ingredients are gone either way.
-4. Keep brewing until the time runs out, all lives are lost, or the ingredients run out.
-5. Use **Pause** at any time. A Top-10 score can be saved to the **Leaderboard**.
+1. Open **Settings** and choose **Easy**, **Medium** or **Hard** (Medium by default). **Help** shows the rules.
+2. Press **Start Game**. A random recipe appears with 3 target ranges, and the shelf fills with ingredients.
+3. Click ingredients on the shelf to add them to the cauldron. The 3 bars show the current mix and glow green when a value is inside its target zone.
+4. Press **Brew**. If all 3 values are inside the zones (with the difficulty tolerance), you score points and gain time; otherwise you lose a life. Used ingredients are gone either way.
+5. Keep brewing until the time runs out, all lives are lost, or the ingredients run out.
+6. Use **Pause** at any time. If you close the page, **Continue Game** brings the run back. A Top-10 score can be saved to the **Leaderboard** of its difficulty.
 
 ## Getting started
 
@@ -78,7 +95,7 @@ src/
 ├── data/          # fixed game data: ingredients, recipes, difficulty, bar scales
 ├── logic/         # pure game rules: stock, sums, brew check, recipes, timer, leaderboard
 ├── state/         # the store that holds the game state
-├── storage/       # localStorage access for the leaderboard
+├── storage/       # localStorage access for the leaderboards and the saved game
 ├── types/         # shared TypeScript types
 ├── ui/            # DOM rendering and dialogs only, no game rules
 ├── styles/        # CSS with design tokens
