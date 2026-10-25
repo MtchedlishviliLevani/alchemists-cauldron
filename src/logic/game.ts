@@ -3,7 +3,7 @@ import { INGREDIENTS } from '../data/ingredients';
 import type { IDifficultySettings } from '../data/difficulty';
 import type { Difficulty, GameOverReason, IGameState } from '../types/game';
 import { isBrewSuccessful } from './brew-check';
-import { calculateCauldron } from './calculate-cauldron';
+import { calculateMix, firedReactions, reactionsFor } from './reactions';
 import { pickRecipe } from './recipe-generator';
 import { createStock, isStockEmpty, stockOf, takeFromStock } from './stock';
 import { computeTimeLeft } from './timer';
@@ -27,6 +27,7 @@ export function createMenuState(difficulty: Difficulty = LEVEL_1_DIFFICULTY): IG
     shelfStock: {},
     gameOverReason: null,
     lastBrew: null,
+    lastReaction: null,
   };
 }
 
@@ -67,15 +68,40 @@ export function canAddIngredient(state: IGameState, id: string): boolean {
   );
 }
 
-export function addIngredient(state: IGameState, id: string): IGameState {
+export function addIngredient(state: IGameState, id: string, now: number): IGameState {
   if (!canAddIngredient(state, id)) return state;
   const ingredient = state.shelf.find((item) => item.id === id);
   if (ingredient === undefined) return state;
-  return {
+  const cauldronIngredients = [...state.cauldronIngredients, ingredient];
+  const added: IGameState = {
     ...state,
-    cauldronIngredients: [...state.cauldronIngredients, ingredient],
+    cauldronIngredients,
     shelfStock: takeFromStock(state.shelfStock, id),
   };
+  const fired = firedReactions(
+    state.cauldronIngredients,
+    cauldronIngredients,
+    reactionsFor(state.difficulty)
+  );
+  if (fired.length === 0) return added;
+
+  const timePenalty = fired.reduce((total, reaction) => total + (reaction.timePenalty ?? 0), 0);
+  const livesLost = fired.reduce((total, reaction) => total + (reaction.livesLost ?? 0), 0);
+  const clears = fired.some((reaction) => reaction.clearsCauldron === true);
+  const timeLeft = remainingTime(state, now) - timePenalty;
+  const reacted: IGameState = {
+    ...added,
+    lives: state.lives - livesLost,
+    timeLeft: Math.max(0, timeLeft),
+    endTime: now + Math.max(0, timeLeft),
+    cauldronIngredients: clears ? [] : cauldronIngredients,
+    lastReaction: {
+      ids: fired.map((reaction) => reaction.id),
+      count: (state.lastReaction?.count ?? 0) + 1,
+    },
+  };
+  if (timeLeft <= 0) return endGame(reacted, 'time', now);
+  return settle(reacted, now);
 }
 
 export function canBrew(state: IGameState): boolean {
@@ -124,7 +150,7 @@ export function tick(state: IGameState, now: number): IGameState {
 export function brew(state: IGameState, random: RandomSource, now: number): IGameState {
   if (!canBrew(state) || state.activeRecipe === null) return state;
   const settings = settingsFor(state);
-  const values = calculateCauldron(state.cauldronIngredients);
+  const values = calculateMix(state.cauldronIngredients, state.difficulty);
   const success = isBrewSuccessful(values, state.activeRecipe, settings.tolerance);
   const count = (state.lastBrew?.count ?? 0) + 1;
 

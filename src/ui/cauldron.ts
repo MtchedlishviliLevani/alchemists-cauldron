@@ -1,4 +1,5 @@
-import type { IGameState } from '../types/game';
+import { activeReactions, findReaction, reactionsFor } from '../logic/reactions';
+import type { IGameState, IReaction } from '../types/game';
 import { el } from './dom';
 import { hasIngredient, INGREDIENT_MIME } from './drag';
 
@@ -21,7 +22,12 @@ export function createCauldron(
     attrs: { 'aria-label': 'Ingredients in the cauldron' },
   });
   const empty = el('p', { className: 'panel__empty', text: 'The cauldron is empty.' });
-  const content = el('div', { className: 'cauldron__content', children: [list, empty] });
+  const active = el('p', { className: 'cauldron__active' });
+  const notice = el('p', { className: 'cauldron__notice', attrs: { 'aria-live': 'polite' } });
+  const content = el('div', {
+    className: 'cauldron__content',
+    children: [list, empty, active, notice],
+  });
   const element = el('section', {
     className: 'panel cauldron',
     attrs: { 'aria-labelledby': 'cauldron-title' },
@@ -55,8 +61,35 @@ export function createCauldron(
   });
 
   let rendered: IGameState['cauldronIngredients'] | null = null;
+  let shownReaction = 0;
+
+  const showNotice = (state: IGameState): void => {
+    const event = state.lastReaction;
+    if (event === null || state.status === 'menu') {
+      notice.replaceChildren();
+      shownReaction = 0;
+      return;
+    }
+    if (event.count === shownReaction) return;
+    shownReaction = event.count;
+    const fired = event.ids
+      .map(findReaction)
+      .filter((reaction): reaction is IReaction => reaction !== undefined);
+    notice.replaceChildren(
+      ...fired.map((reaction) =>
+        el('span', {
+          className: 'reaction',
+          children: [
+            el('strong', { className: 'reaction__name', text: `${reaction.name}!` }),
+            el('span', { text: reaction.effect }),
+          ],
+        })
+      )
+    );
+  };
 
   const update = (state: IGameState): void => {
+    showNotice(state);
     if (state.cauldronIngredients === rendered) return;
     rendered = state.cauldronIngredients;
     list.replaceChildren(
@@ -75,6 +108,10 @@ export function createCauldron(
       )
     );
     empty.hidden = state.cauldronIngredients.length > 0;
+    const names = activeReactions(state.cauldronIngredients, reactionsFor(state.difficulty)).map(
+      (reaction) => reaction.name
+    );
+    active.textContent = names.length > 0 ? `Active: ${names.join(', ')}` : '';
   };
 
   return { element, update };

@@ -22,5 +22,6 @@ export function describeDifficulty(difficulty: Difficulty): string {
     `${String(settings.startTime / SECOND)} s`,
     `±${String(settings.tolerance)}`,
     `${String(settings.lives)} lives`,
+    settings.reactionCount === 0 ? 'no reactions' : `${String(settings.reactionCount)} reactions`,
   ].join(' · ');
 }

@@ -38,7 +38,7 @@ export function mountApp(root: HTMLElement): void {
 
   const hud = createHud();
   const add = (id: string): void => {
-    store.setState(addIngredient(store.getState(), id));
+    store.setState(addIngredient(store.getState(), id, Date.now()));
   };
   const shelf = createShelf(add);
   const bars = createBars();
