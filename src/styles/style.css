@@ -836,7 +836,7 @@ button:disabled {
 .tooltip {
   position: absolute;
   top: 0;
-  left: calc(100% + var(--space-2));
+  right: 0;
   z-index: var(--z-tooltip);
   display: flex;
   flex-direction: column;
@@ -855,31 +855,32 @@ button:disabled {
   transition: opacity var(--duration-fast) var(--easing-standard);
 }
 
-.tooltip--left {
+.card:is(:hover, :focus-visible) .tooltip {
+  right: auto;
+  left: calc(100% + var(--space-2));
+  visibility: visible;
+  opacity: 1;
+}
+
+.card:is(:hover, :focus-visible) .tooltip--left {
   right: calc(100% + var(--space-2));
   left: auto;
 }
 
-.tooltip--up {
+.card:is(:hover, :focus-visible) .tooltip--up {
   top: auto;
   bottom: 0;
 }
 
-.tooltip--stacked {
+.card:is(:hover, :focus-visible) .tooltip--stacked {
   top: calc(100% + var(--space-1));
   right: var(--space-2);
   left: auto;
 }
 
-.tooltip--stacked.tooltip--up {
+.card:is(:hover, :focus-visible) .tooltip--stacked.tooltip--up {
   top: auto;
   bottom: calc(100% + var(--space-1));
-}
-
-.card:hover .tooltip,
-.card:focus-visible .tooltip {
-  visibility: visible;
-  opacity: 1;
 }
 
 .card--empty .tooltip,
