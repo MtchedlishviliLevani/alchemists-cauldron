@@ -2,8 +2,11 @@ import {
   addIngredient,
   brew,
   canBrew,
+  canPourOut,
   createMenuState,
+  isCauldronFull,
   pauseGame,
+  pourOut,
   resumeGame,
   setDifficulty,
   startGame,
@@ -21,6 +24,7 @@ import { el } from './dom';
 import { createGameOver } from './game-over';
 import { createHelp } from './help';
 import { createHud } from './hud';
+import { bindKeyboard } from './keyboard';
 import { createLeaderboard } from './leaderboard';
 import { createPause } from './pause';
 import { createRecipePanel } from './recipe-panel';
@@ -36,11 +40,18 @@ export function mountApp(root: HTMLElement): void {
   };
 
   const hud = createHud();
-  const shelf = createShelf((id) => {
-    store.setState(addIngredient(store.getState(), id));
-  });
+  const add = (id: string): void => {
+    store.setState(addIngredient(store.getState(), id, Date.now()));
+  };
+  const shelf = createShelf(add);
   const bars = createBars();
-  const cauldron = createCauldron(bars.element);
+  const cauldron = createCauldron({
+    canDrop: () => {
+      const state = store.getState();
+      return state.status === 'playing' && !isCauldronFull(state);
+    },
+    onDrop: add,
+  });
   const recipePanel = createRecipePanel();
   const toMenu = (): void => {
     store.setState(createMenuState(store.getState().difficulty));
@@ -82,12 +93,23 @@ export function mountApp(root: HTMLElement): void {
 
   const brewButton = el('button', {
     className: 'button button--primary brew-button',
-    attrs: { type: 'button' },
+    attrs: { type: 'button', 'aria-keyshortcuts': 'B' },
     text: 'Brew',
   });
-  brewButton.addEventListener('click', () => {
+  const doBrew = (): void => {
     store.setState(brew(store.getState(), Math.random, Date.now()));
+  };
+  brewButton.addEventListener('click', doBrew);
+
+  const pourButton = el('button', {
+    className: 'button button--secondary pour-button',
+    attrs: { type: 'button', 'aria-keyshortcuts': 'O' },
+    text: 'Pour Out (−10 s)',
   });
+  const doPour = (): void => {
+    store.setState(pourOut(store.getState(), Date.now()));
+  };
+  pourButton.addEventListener('click', doPour);
 
   const leaderboardButton = el('button', {
     className: 'button button--secondary',
@@ -116,7 +138,7 @@ export function mountApp(root: HTMLElement): void {
 
   const pauseButton = el('button', {
     className: 'button button--secondary pause-button',
-    attrs: { type: 'button' },
+    attrs: { type: 'button', 'aria-keyshortcuts': 'P Escape' },
     text: 'Pause',
   });
   pauseButton.addEventListener('click', pause);
@@ -142,7 +164,22 @@ export function mountApp(root: HTMLElement): void {
 
   const actions = el('div', {
     className: 'game__actions',
-    children: [startButton, continueButton, brewButton, pauseButton, menuActions],
+    children: [
+      startButton,
+      continueButton,
+      brewButton,
+      el('div', { className: 'game__secondary', children: [pourButton, pauseButton] }),
+      menuActions,
+    ],
+  });
+
+  const gauges = el('section', {
+    className: 'gauges',
+    attrs: { 'aria-labelledby': 'gauges-title' },
+    children: [
+      el('h2', { className: 'section-title', attrs: { id: 'gauges-title' }, text: 'Readings' }),
+      bars.element,
+    ],
   });
 
   const game = el('main', {
@@ -151,11 +188,20 @@ export function mountApp(root: HTMLElement): void {
       header,
       el('div', {
         className: 'board',
-        children: [shelf.element, recipePanel.element, cauldron.element],
+        children: [recipePanel.element, cauldron.element, gauges, actions, shelf.element],
       }),
-      actions,
     ],
   });
+
+  let shakenBrew = 0;
+  const shakeOnFailure = (state: IGameState): void => {
+    const brewResult = state.lastBrew;
+    if (brewResult === null || brewResult.count === shakenBrew) return;
+    shakenBrew = brewResult.count;
+    const odd = brewResult.count % 2 === 1;
+    game.classList.toggle('game--shake-odd', !brewResult.success && odd);
+    game.classList.toggle('game--shake-even', !brewResult.success && !odd);
+  };
 
   let ticker = 0;
   const syncTicker = (state: IGameState): void => {
@@ -175,12 +221,16 @@ export function mountApp(root: HTMLElement): void {
     brewButton.hidden = !inRun;
     brewButton.disabled = !canBrew(state);
     pauseButton.hidden = !inRun;
+    pourButton.hidden = !inRun;
+    pourButton.disabled = !canPourOut(state);
     menuActions.hidden = state.status !== 'menu';
     continueButton.hidden = state.status !== 'menu' || savedGame === null;
     difficultyLabel.textContent = `Difficulty: ${DIFFICULTY_LABELS[state.difficulty]}`;
     pauseButton.disabled = state.status !== 'playing';
+    game.classList.toggle('game--menu', state.status === 'menu');
     game.classList.toggle('game--paused', state.status === 'paused');
     game.inert = state.status === 'paused';
+    shakeOnFailure(state);
     hud.update(state);
     shelf.update(state);
     cauldron.update(state);
@@ -212,6 +262,25 @@ export function mountApp(root: HTMLElement): void {
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') pause();
+  });
+
+  bindKeyboard(store.getState, (action) => {
+    switch (action.type) {
+      case 'brew':
+        doBrew();
+        break;
+      case 'pour':
+        doPour();
+        break;
+      case 'pause':
+        pause();
+        break;
+      case 'add': {
+        const ingredient = store.getState().shelf[action.index];
+        if (ingredient !== undefined) add(ingredient.id);
+        break;
+      }
+    }
   });
 
   store.subscribe(persist);

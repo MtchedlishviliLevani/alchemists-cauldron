@@ -40,6 +40,25 @@ export interface IBrewResult {
   count: number;
 }
 
+export type ReactionKind = 'ingredients' | 'stats' | 'mix';
+
+export interface IReaction {
+  id: string;
+  name: string;
+  kind: ReactionKind;
+  effect: string;
+  isActive: (ingredients: readonly IIngredient[]) => boolean;
+  apply: (values: ICauldronValues) => ICauldronValues;
+  timePenalty?: number;
+  livesLost?: number;
+  clearsCauldron?: boolean;
+}
+
+export interface IReactionEvent {
+  ids: string[];
+  count: number;
+}
+
 export interface IGameState {
   status: GameStatus;
   difficulty: Difficulty;
@@ -53,4 +72,5 @@ export interface IGameState {
   shelfStock: Record<string, number>;
   gameOverReason: GameOverReason | null;
   lastBrew: IBrewResult | null;
+  lastReaction: IReactionEvent | null;
 }
