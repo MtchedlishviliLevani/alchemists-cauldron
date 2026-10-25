@@ -34,7 +34,7 @@ The project is built step by step. Each stage builds on the previous one.
 **Level 1 — one full playable game (Medium rules)**
 
 - **Shelf & cauldron:** 6 ingredient cards with the 3 numbers and a random stock of 2–15. Each add costs 1 stock; an empty slot stays in place, dimmed, and can't be used. The cauldron holds up to 4 ingredients in the order they were added.
-- **Parameter bars:** Temperature, Density and Magic Power update after every add, with smooth transitions, a 0 centre line for signed values, the recipe target zone, a value marker and a green glow when the value fits.
+- **Parameter bars:** Temperature, Density and Magic Power update after every add, with smooth transitions, a 0 centre line for signed values, the recipe target zone, a value marker, and a glow with a ✓ when the value fits.
 - **Recipes & Brew:** a random Medium recipe from the 20-recipe table and the counter `Ingredients: n / 4`. Brew checks every value against the range ±8: success gives +200 points, +10 s (up to 150 s) and a new recipe; failure costs a life. Ingredients are spent either way.
 - **Timer & Game Over:** 150 s and 3 lives. Time is computed from timestamps and turns red and pulses under 15 s. The game ends at 00:00, with 0 lives, or when ingredients run out, and shows the reason, the final score and **Play again**.
 - **Pause:** the Pause button or a hidden tab stops the timer and blurs the field; the dialog offers **Resume** and **Exit to Menu**.
@@ -62,7 +62,7 @@ The project is built step by step. Each stage builds on the previous one.
 - **Tooltip:** cards show only the icon, name and stock; the 3 numbers appear in a tooltip on hover or focus. It opens to the left near the right edge, upward near the bottom edge, and is hidden while paused.
 - **Chemical reactions:** a typed table of 15 reactions. Easy has none, Medium uses **Bubbling** and **Solar Frost**, Hard uses **Volatile Mix**, **Pressure Spike** and **Steam Burst**. The mix is recalculated from the ingredient list with the active reactions applied. A reaction fires only when it turns active, and its one-time effect (time, a life, clearing the cauldron) happens once.
 - **Pour Out:** empties the cauldron for −10 s without losing a life; poured ingredients are not returned.
-- **Visual feedback:** ingredient icons float in a CSS-drawn cauldron; a correct brew shows a sparkle burst with the time bonus, a failed brew an explosion and a screen shake. CSS animations only.
+- **Visual feedback:** an SVG cauldron with fire, steam and bubbles; the liquid warms or cools with the mix temperature; ingredients drop in with a ripple and float in the pot; a correct brew shows a sparkle burst with the time bonus, a failed brew a smoke puff and a screen shake; a lost life cracks its heart. CSS animations only, and `prefers-reduced-motion` turns them off.
 - **Keyboard shortcuts:** during play only, see the table below. They are ignored on the start, pause and Game Over screens and while typing.
 
 | Key       | Action                                    |
@@ -72,11 +72,20 @@ The project is built step by step. Each stage builds on the previous one.
 | `O`       | Pour Out                                  |
 | `P`/`Esc` | Pause (`Esc` in the pause window resumes) |
 
+## Visual design
+
+The game is drawn as an alchemist's workshop: a parchment sheet with forest-green ink, copper details and turquoise magic.
+
+- **Cauldron first:** the SVG cauldron sits in the centre, with the recipe slip on the left and the readings and Brew on the right. The ingredient shelf runs along the bottom.
+- **Own illustrations:** every ingredient has a small inline SVG in one shared style (`src/ui/art.ts`), coloured with CSS tokens. The `icon` field of the data is kept as a text fallback.
+- **Responsive:** on tablets the recipe and readings sit side by side above the cauldron; on phones the recipe is compact, the shelf follows the readings, and Brew, Pour Out and Pause stay in a bar at the bottom of the screen.
+- **No external assets:** built-in serif and system fonts, no images, no libraries.
+
 ## How to play
 
 1. Open **Settings** and choose **Easy**, **Medium** or **Hard** (Medium by default). **Help** shows the rules.
 2. Press **Start Game**. A random recipe appears with 3 target ranges, and the shelf fills with ingredients.
-3. Click or drag ingredients into the cauldron (or press `1`–`8`). Hover a card to see its values. The 3 bars show the current mix and glow green when a value is inside its target zone. On Medium and Hard watch for reactions.
+3. Click or drag ingredients into the cauldron (or press `1`–`8`). Hover a card to see its values. The 3 readings show the current mix and glow with a ✓ when a value is inside its target zone. On Medium and Hard watch for reactions.
 4. Press **Brew** (`B`). If all 3 values are inside the zones (with the difficulty tolerance), you score points and gain time; otherwise you lose a life. Used ingredients are gone either way. **Pour Out** (`O`) empties a bad mix for 10 seconds instead.
 5. Keep brewing until the time runs out, all lives are lost, or the ingredients run out.
 6. Use **Pause** (`P` / `Esc`) at any time. If you close the page, **Continue Game** brings the run back. A Top-10 score can be saved to the **Leaderboard** of its difficulty.
