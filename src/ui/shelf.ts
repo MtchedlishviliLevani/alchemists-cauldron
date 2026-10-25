@@ -16,21 +16,52 @@ interface ICard {
   badge: HTMLSpanElement;
 }
 
-function Stat(label: string, value: number): HTMLElement {
+function TooltipRow(label: string, value: number): HTMLElement {
   return el('span', {
-    className: 'card__stat',
+    className: 'tooltip__row',
     children: [
-      el('span', { className: 'card__stat-label', text: label }),
-      el('span', { className: 'card__stat-value', text: formatSigned(value) }),
+      el('span', { className: 'tooltip__label', text: label }),
+      el('span', { className: 'tooltip__value', text: formatSigned(value) }),
     ],
   });
 }
 
+function Tooltip(ingredient: IIngredient): HTMLElement {
+  return el('span', {
+    className: 'tooltip',
+    attrs: { id: `tooltip-${ingredient.id}`, role: 'tooltip' },
+    children: [
+      el('span', { className: 'tooltip__title', text: ingredient.name }),
+      TooltipRow('Temperature', ingredient.temperature),
+      TooltipRow('Density', ingredient.density),
+      TooltipRow('Magic Power', ingredient.magicPower),
+    ],
+  });
+}
+
+function placeTooltip(card: HTMLElement, tooltip: HTMLElement): void {
+  const cardBox = card.getBoundingClientRect();
+  const tipBox = tooltip.getBoundingClientRect();
+  const viewport = document.documentElement;
+  const fitsRight = cardBox.right + tipBox.width <= viewport.clientWidth;
+  const fitsLeft = cardBox.left - tipBox.width >= 0;
+  const stacked = !fitsRight && !fitsLeft;
+  const bottom = stacked ? cardBox.bottom : cardBox.top;
+  tooltip.classList.toggle('tooltip--left', !fitsRight && fitsLeft);
+  tooltip.classList.toggle('tooltip--stacked', stacked);
+  tooltip.classList.toggle('tooltip--up', bottom + tipBox.height > viewport.clientHeight);
+}
+
 function Card(ingredient: IIngredient, onAdd: (id: string) => void): ICard {
   const badge = el('span', { className: 'card__badge', attrs: { 'aria-hidden': 'true' } });
+  const tooltip = Tooltip(ingredient);
   const button = el('button', {
     className: 'card',
-    attrs: { type: 'button', 'data-id': ingredient.id },
+    attrs: {
+      type: 'button',
+      'data-id': ingredient.id,
+      'aria-describedby': tooltip.id,
+    },
     children: [
       el('span', {
         className: 'card__icon',
@@ -38,20 +69,18 @@ function Card(ingredient: IIngredient, onAdd: (id: string) => void): ICard {
         text: ingredient.icon,
       }),
       el('span', { className: 'card__name', text: ingredient.name }),
-      el('span', {
-        className: 'card__stats',
-        children: [
-          Stat('T', ingredient.temperature),
-          Stat('D', ingredient.density),
-          Stat('M', ingredient.magicPower),
-        ],
-      }),
       badge,
+      tooltip,
     ],
   });
   button.addEventListener('click', () => {
     onAdd(ingredient.id);
   });
+  const place = (): void => {
+    placeTooltip(button, tooltip);
+  };
+  button.addEventListener('mouseenter', place);
+  button.addEventListener('focus', place);
   button.addEventListener('dragstart', (event) => {
     if (button.disabled || event.dataTransfer === null) {
       event.preventDefault();
