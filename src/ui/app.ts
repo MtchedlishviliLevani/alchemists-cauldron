@@ -16,6 +16,7 @@ import { createCauldron } from './cauldron';
 import { el } from './dom';
 import { createGameOver } from './game-over';
 import { createHud } from './hud';
+import { createLeaderboard } from './leaderboard';
 import { createPause } from './pause';
 import { createRecipePanel } from './recipe-panel';
 import { createShelf } from './shelf';
@@ -43,7 +44,12 @@ export function mountApp(root: HTMLElement): void {
   const resume = (): void => {
     store.setState(resumeGame(store.getState(), Date.now()));
   };
-  const gameOver = createGameOver({ onPlayAgain: newGame, onMenu: toMenu });
+  const leaderboard = createLeaderboard();
+  const gameOver = createGameOver({
+    onPlayAgain: newGame,
+    onMenu: toMenu,
+    onLeaderboard: leaderboard.open,
+  });
   const pauseDialog = createPause({ onResume: resume, onExit: toMenu });
 
   const startButton = el('button', {
@@ -62,6 +68,15 @@ export function mountApp(root: HTMLElement): void {
     store.setState(brew(store.getState(), Math.random, Date.now()));
   });
 
+  const leaderboardButton = el('button', {
+    className: 'button button--secondary',
+    attrs: { type: 'button' },
+    text: 'Leaderboard',
+  });
+  leaderboardButton.addEventListener('click', () => {
+    leaderboard.open();
+  });
+
   const pauseButton = el('button', {
     className: 'button button--secondary pause-button',
     attrs: { type: 'button' },
@@ -76,7 +91,7 @@ export function mountApp(root: HTMLElement): void {
 
   const actions = el('div', {
     className: 'game__actions',
-    children: [startButton, brewButton, pauseButton],
+    children: [startButton, brewButton, pauseButton, leaderboardButton],
   });
 
   const game = el('main', {
@@ -109,6 +124,7 @@ export function mountApp(root: HTMLElement): void {
     brewButton.hidden = !inRun;
     brewButton.disabled = !canBrew(state);
     pauseButton.hidden = !inRun;
+    leaderboardButton.hidden = state.status !== 'menu';
     pauseButton.disabled = state.status !== 'playing';
     game.classList.toggle('game--paused', state.status === 'paused');
     game.inert = state.status === 'paused';
@@ -127,6 +143,6 @@ export function mountApp(root: HTMLElement): void {
   });
 
   store.subscribe(render);
-  root.replaceChildren(game, gameOver.element, pauseDialog.element);
+  root.replaceChildren(game, gameOver.element, pauseDialog.element, ...leaderboard.dialogs);
   render(store.getState());
 }
