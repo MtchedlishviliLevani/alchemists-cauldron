@@ -1,8 +1,8 @@
 import './styles/style.css';
-import { StartScreen } from './ui/start-screen';
+import { mountApp } from './ui/app';
 
 const root = document.querySelector<HTMLDivElement>('#app');
 
 if (root) {
-  root.replaceChildren(StartScreen());
+  mountApp(root);
 }
