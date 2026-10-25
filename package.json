@@ -12,5 +12,8 @@
   "engines": {
     "node": ">=20"
   },
-  "scripts": {}
+  "scripts": {},
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
 }
