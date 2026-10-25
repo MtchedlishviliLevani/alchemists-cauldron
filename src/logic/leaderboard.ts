@@ -1,5 +1,9 @@
+import type { Difficulty } from '../types/game';
+import { isDifficulty } from './difficulty';
+
 export interface ILeaderboardEntry {
   name: string;
+  difficulty: Difficulty;
   score: number;
   date: number;
 }
@@ -47,10 +51,15 @@ export function insertEntry(
   return sortEntries([...entries, entry]);
 }
 
-export function isLeaderboardEntry(value: unknown): value is ILeaderboardEntry {
+export function isLeaderboardEntry(
+  value: unknown,
+  difficulty: Difficulty
+): value is ILeaderboardEntry {
   if (typeof value !== 'object' || value === null) return false;
-  const { name, score, date } = value as Record<string, unknown>;
+  const { name, score, date, difficulty: entryDifficulty } = value as Record<string, unknown>;
   return (
+    isDifficulty(entryDifficulty) &&
+    entryDifficulty === difficulty &&
     typeof name === 'string' &&
     validatePlayerName(name) === null &&
     typeof score === 'number' &&

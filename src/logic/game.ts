@@ -45,6 +45,15 @@ export function startGame(difficulty: Difficulty, random: RandomSource, now: num
   };
 }
 
+export function canChangeDifficulty(state: IGameState): boolean {
+  return state.status === 'menu' || state.status === 'game-over';
+}
+
+export function setDifficulty(state: IGameState, difficulty: Difficulty): IGameState {
+  if (!canChangeDifficulty(state) || state.difficulty === difficulty) return state;
+  return createMenuState(difficulty);
+}
+
 export function isCauldronFull(state: IGameState): boolean {
   return state.cauldronIngredients.length >= settingsFor(state).maxCauldronIngredients;
 }
