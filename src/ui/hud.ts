@@ -1,14 +1,13 @@
 import { settingsFor } from '../logic/game';
 import { formatTime, isLowTime } from '../logic/timer';
 import type { IGameState } from '../types/game';
+import { HeartArt } from './art';
 import { el } from './dom';
 
 export interface IHudView {
   element: HTMLElement;
   update: (state: IGameState) => void;
 }
-
-const LIFE_ICON = '♥';
 
 function Stat(label: string, value: HTMLElement, extra?: HTMLElement): HTMLElement {
   return el('div', {
@@ -30,8 +29,9 @@ export function createHud(): IHudView {
     attrs: { 'aria-hidden': 'true' },
     children: [timeFill],
   });
-  const lives = el('span', { className: 'hud__value hud__lives' });
+  const lives = el('span', { className: 'hud__value hud__lives', attrs: { role: 'img' } });
   const livesStat = Stat('Lives', lives);
+  let hearts: HTMLElement[] = [];
 
   const element = el('div', {
     className: 'hud',
@@ -49,7 +49,16 @@ export function createHud(): IHudView {
     element.classList.toggle('hud--low-time', low);
 
     livesStat.hidden = state.status === 'menu';
-    lives.textContent = LIFE_ICON.repeat(Math.max(0, state.lives));
+    const max = Math.max(settingsFor(state).lives, state.lives);
+    if (hearts.length !== max) {
+      hearts = Array.from({ length: max }, () =>
+        el('span', { className: 'hud__life', children: [HeartArt()] })
+      );
+      lives.replaceChildren(...hearts);
+    }
+    hearts.forEach((heart, index) => {
+      heart.classList.toggle('hud__life--lost', index >= state.lives);
+    });
     lives.setAttribute('aria-label', `${String(state.lives)} lives left`);
   };
 
