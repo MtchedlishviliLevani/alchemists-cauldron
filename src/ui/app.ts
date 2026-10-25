@@ -1,6 +1,7 @@
 import { addIngredient, createMenuState, startGame } from '../logic/game';
 import { createStore } from '../state/store';
 import type { IGameState } from '../types/game';
+import { createBars } from './bars';
 import { createCauldron } from './cauldron';
 import { el } from './dom';
 import { createShelf } from './shelf';
@@ -21,7 +22,8 @@ export function mountApp(root: HTMLElement): void {
   const shelf = createShelf((id) => {
     store.setState(addIngredient(store.getState(), id));
   });
-  const cauldron = createCauldron();
+  const bars = createBars();
+  const cauldron = createCauldron(bars.element);
 
   const startButton = el('button', {
     className: 'button button--primary start-button',
@@ -60,6 +62,7 @@ export function mountApp(root: HTMLElement): void {
     startButton.hidden = state.status === 'playing' || state.status === 'paused';
     shelf.update(state);
     cauldron.update(state);
+    bars.update(state);
   };
 
   store.subscribe(render);

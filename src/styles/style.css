@@ -28,7 +28,16 @@
   --radius-full: 999px;
 
   --border-width: 1px;
-  --bar-height: 0.75rem;
+  --bar-height: 0.875rem;
+  --bar-label-width: 6.5rem;
+  --bar-value-width: 2.75rem;
+  --marker-width: 3px;
+  --duration-bar: 400ms;
+  --glow-success: 0 0 0.75rem var(--color-success);
+  --color-zone-target: rgb(95 211 155 / 45%);
+  --color-zone-tolerance: rgb(95 211 155 / 18%);
+  --color-fill: var(--color-accent);
+  --color-zero-line: var(--color-text-muted);
   --content-max-width: 75rem;
   --opacity-disabled: 0.5;
   --opacity-empty: 0.35;
@@ -149,21 +158,82 @@ button:disabled {
 
 .bar {
   display: grid;
-  grid-template-columns: 7rem 1fr 2.5rem;
+  grid-template-columns: var(--bar-label-width) 1fr var(--bar-value-width);
   align-items: center;
   gap: var(--space-2);
   font-size: var(--font-size-sm);
 }
 
 .bar__track {
+  position: relative;
   height: var(--bar-height);
+  overflow: hidden;
   border-radius: var(--radius-full);
   background-color: var(--color-surface-high);
+  transition: box-shadow var(--duration-bar) var(--easing-standard);
+}
+
+.bar__zone,
+.bar__fill {
+  position: absolute;
+  inset-block: 0;
+  left: var(--start, 0);
+  width: var(--size, 0);
+}
+
+.bar__zone[hidden] {
+  display: none;
+}
+
+.bar__zone--tolerance {
+  background-color: var(--color-zone-tolerance);
+}
+
+.bar__zone--target {
+  background-color: var(--color-zone-target);
+}
+
+.bar__fill {
+  background-color: var(--color-fill);
+  opacity: var(--opacity-disabled);
+  transition:
+    left var(--duration-bar) var(--easing-standard),
+    width var(--duration-bar) var(--easing-standard);
+}
+
+.bar__marker,
+.bar__zero {
+  position: absolute;
+  inset-block: 0;
+  left: var(--start, 0);
+  width: var(--marker-width);
+  transform: translateX(-50%);
+}
+
+.bar__marker {
+  background-color: var(--color-text);
+  transition: left var(--duration-bar) var(--easing-standard);
+}
+
+.bar__zero {
+  background-color: var(--color-zero-line);
 }
 
 .bar__value {
   text-align: end;
   font-weight: var(--font-weight-bold);
+}
+
+.bar--matched .bar__track {
+  box-shadow: var(--glow-success);
+}
+
+.bar--matched .bar__marker {
+  background-color: var(--color-success);
+}
+
+.bar--matched .bar__value {
+  color: var(--color-success);
 }
 
 .game__actions {

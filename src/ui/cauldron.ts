@@ -6,7 +6,7 @@ export interface ICauldronView {
   update: (state: IGameState) => void;
 }
 
-export function createCauldron(): ICauldronView {
+export function createCauldron(bars: HTMLElement): ICauldronView {
   const list = el('ol', {
     className: 'cauldron__list',
     attrs: { 'aria-label': 'Ingredients in the cauldron' },
@@ -18,6 +18,7 @@ export function createCauldron(): ICauldronView {
     attrs: { 'aria-labelledby': 'cauldron-title' },
     children: [
       el('h2', { className: 'panel__title', attrs: { id: 'cauldron-title' }, text: 'Cauldron' }),
+      bars,
       content,
     ],
   });
