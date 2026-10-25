@@ -12,8 +12,13 @@
   "engines": {
     "node": ">=20"
   },
-  "scripts": {},
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^8.3.5"
   }
 }
