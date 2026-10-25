@@ -59,6 +59,21 @@
   --tooltip-width: 12rem;
   --z-tooltip: 10;
 
+  --pot-height: 7rem;
+  --pot-width: 12rem;
+  --pot-rim: 0.75rem;
+  --color-pot: #14101f;
+  --color-liquid: rgb(95 211 155 / 35%);
+  --color-liquid-glow: rgb(95 211 155 / 60%);
+  --float-distance: 0.4rem;
+  --float-duration: 2.4s;
+  --float-step: -0.6s;
+  --burst-duration: 900ms;
+  --burst-rise: -3rem;
+  --burst-size: 3rem;
+  --shake-screen: 0.5rem;
+  --duration-shake: 450ms;
+
   --duration-fast: 150ms;
   --easing-standard: ease-out;
 }
@@ -922,4 +937,185 @@ button:disabled {
 
 .reaction__name {
   color: var(--color-accent);
+}
+
+.pot {
+  display: flex;
+  justify-content: center;
+}
+
+.pot__bowl {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, var(--pot-width));
+  height: var(--pot-height);
+  overflow: hidden;
+  border: var(--pot-rim) solid var(--color-outline);
+  border-top-width: var(--border-width);
+  border-radius: var(--radius-md) var(--radius-md) 50% 50%;
+  background-color: var(--color-pot);
+}
+
+.pot__liquid {
+  position: absolute;
+  inset: 30% 0 0;
+  background: linear-gradient(var(--color-liquid-glow), var(--color-liquid));
+  animation: liquid-swell var(--float-duration) ease-in-out infinite alternate;
+}
+
+.pot__floating {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-lg);
+}
+
+.pot__icon {
+  animation: float-icon var(--float-duration) ease-in-out infinite;
+  animation-delay: calc(var(--index) * var(--float-step));
+}
+
+.pot__effect {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.burst {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: var(--font-weight-bold);
+  animation: burst-fade var(--burst-duration) var(--easing-standard) forwards;
+}
+
+.burst__icon {
+  font-size: var(--burst-size);
+  line-height: 1;
+}
+
+.burst--success .burst__icon {
+  animation: burst-pop var(--burst-duration) var(--easing-standard) forwards;
+}
+
+.burst--success .burst__text {
+  color: var(--color-success);
+  animation: burst-rise var(--burst-duration) var(--easing-standard) forwards;
+}
+
+.burst--fail .burst__icon {
+  animation: burst-explode var(--burst-duration) var(--easing-standard) forwards;
+}
+
+.game--shake-odd {
+  animation: screen-shake-odd var(--duration-shake) var(--easing-standard);
+}
+
+.game--shake-even {
+  animation: screen-shake-even var(--duration-shake) var(--easing-standard);
+}
+
+@keyframes float-icon {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+
+  50% {
+    transform: translateY(calc(var(--float-distance) * -1)) rotate(8deg);
+  }
+}
+
+@keyframes liquid-swell {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(var(--float-distance) * -1));
+  }
+}
+
+@keyframes burst-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes burst-pop {
+  from {
+    transform: scale(0.3) rotate(-30deg);
+  }
+
+  to {
+    transform: scale(1.3) rotate(0);
+  }
+}
+
+@keyframes burst-rise {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(var(--burst-rise));
+  }
+}
+
+@keyframes burst-explode {
+  0% {
+    transform: scale(0.2);
+  }
+
+  40% {
+    transform: scale(1.6);
+  }
+
+  100% {
+    transform: scale(2.2);
+  }
+}
+
+@keyframes screen-shake-odd {
+  0%,
+  100% {
+    transform: translate(0);
+  }
+
+  20%,
+  60% {
+    transform: translate(calc(var(--shake-screen) * -1), var(--shake-distance));
+  }
+
+  40%,
+  80% {
+    transform: translate(var(--shake-screen), calc(var(--shake-distance) * -1));
+  }
+}
+
+@keyframes screen-shake-even {
+  0%,
+  100% {
+    transform: translate(0);
+  }
+
+  20%,
+  60% {
+    transform: translate(calc(var(--shake-screen) * -1), var(--shake-distance));
+  }
+
+  40%,
+  80% {
+    transform: translate(var(--shake-screen), calc(var(--shake-distance) * -1));
+  }
 }

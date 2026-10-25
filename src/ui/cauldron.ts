@@ -1,7 +1,10 @@
+import { settingsFor } from '../logic/game';
 import { activeReactions, findReaction, reactionsFor } from '../logic/reactions';
 import type { IGameState, IReaction } from '../types/game';
 import { el } from './dom';
 import { hasIngredient, INGREDIENT_MIME } from './drag';
+
+const MS_PER_SECOND = 1000;
 
 export interface ICauldronView {
   element: HTMLElement;
@@ -24,6 +27,18 @@ export function createCauldron(
   const empty = el('p', { className: 'panel__empty', text: 'The cauldron is empty.' });
   const active = el('p', { className: 'cauldron__active' });
   const notice = el('p', { className: 'cauldron__notice', attrs: { 'aria-live': 'polite' } });
+  const floating = el('div', { className: 'pot__floating' });
+  const effect = el('div', { className: 'pot__effect' });
+  const pot = el('div', {
+    className: 'pot',
+    attrs: { 'aria-hidden': 'true' },
+    children: [
+      el('div', {
+        className: 'pot__bowl',
+        children: [el('div', { className: 'pot__liquid' }), floating, effect],
+      }),
+    ],
+  });
   const content = el('div', {
     className: 'cauldron__content',
     children: [list, empty, active, notice],
@@ -33,6 +48,7 @@ export function createCauldron(
     attrs: { 'aria-labelledby': 'cauldron-title' },
     children: [
       el('h2', { className: 'panel__title', attrs: { id: 'cauldron-title' }, text: 'Cauldron' }),
+      pot,
       bars,
       content,
     ],
@@ -62,6 +78,33 @@ export function createCauldron(
 
   let rendered: IGameState['cauldronIngredients'] | null = null;
   let shownReaction = 0;
+  let shownBrew = 0;
+
+  const showBrewEffect = (state: IGameState): void => {
+    const brew = state.lastBrew;
+    if (brew === null || state.status === 'menu') {
+      effect.replaceChildren();
+      shownBrew = 0;
+      return;
+    }
+    if (brew.count === shownBrew) return;
+    shownBrew = brew.count;
+    const bonus = settingsFor(state).timeBonus / MS_PER_SECOND;
+    effect.replaceChildren(
+      brew.success
+        ? el('span', {
+            className: 'burst burst--success',
+            children: [
+              el('span', { className: 'burst__icon', text: '✨' }),
+              el('span', { className: 'burst__text', text: `+${String(bonus)}s` }),
+            ],
+          })
+        : el('span', {
+            className: 'burst burst--fail',
+            children: [el('span', { className: 'burst__icon', text: '💥' })],
+          })
+    );
+  };
 
   const showNotice = (state: IGameState): void => {
     const event = state.lastReaction;
@@ -90,8 +133,16 @@ export function createCauldron(
 
   const update = (state: IGameState): void => {
     showNotice(state);
+    showBrewEffect(state);
     if (state.cauldronIngredients === rendered) return;
     rendered = state.cauldronIngredients;
+    floating.replaceChildren(
+      ...state.cauldronIngredients.map((ingredient, index) => {
+        const icon = el('span', { className: 'pot__icon', text: ingredient.icon });
+        icon.style.setProperty('--index', String(index));
+        return icon;
+      })
+    );
     list.replaceChildren(
       ...state.cauldronIngredients.map((ingredient) =>
         el('li', {
